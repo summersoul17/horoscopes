@@ -1,5 +1,7 @@
 import asyncio
 import subprocess
+from multiprocessing import Process
+
 from fastapi import FastAPI
 
 from src.api import horoscope_router
@@ -27,6 +29,15 @@ async def run_process(command):
 
 async def main():
     # await create_tables()
+    p1 = Process(target=subprocess.run, args=(["uvicorn", "main:app", "--reload"], ), daemon=True)
+    p2 = Process(target=subprocess.run, args=(["taskiq", "scheduler", "main:scheduler"], ), daemon=True)
+    p3 = Process(target=subprocess.run, args=(["taskiq", "worker", "main:broker", "main"], ), daemon=True)
+    p1.start()
+    p2.start()
+    p3.start()
+    p1.join()
+    p2.join()
+    p3.join()
     pass
 
 

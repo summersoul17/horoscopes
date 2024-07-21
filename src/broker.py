@@ -25,17 +25,20 @@ scheduler = TaskiqScheduler(
 )
 
 
+# @broker.task(schedule=[{"cron": "*/1 * * * *", "args": [1]}])
 @broker.task(schedule=[{"cron": "0 10 * * *", "args": [1]}])
 async def daily_task(*_, **__):
     print("Зашел в дейли таск")
     text = await generate_horoscope()
     print(f"Сгенерировал гороскоп")
-    await create_vk_post(post_text=text.replace("*", "").replace("\n\n", "\n"))
-    print("Создал пост вк")
-    for text, sign in zip(text.split("\n\n")[:12], ZodiacSigns):
-        data = {
-            "pub_date": datetime.utcnow(),
-            "zodiac_sign": sign,
-            "horoscope_text": text.replace("*", "")
-        }
-        await post_horoscope(data)
+    is_created = await create_vk_post(post_text=text.replace("*", "").replace("\n\n", "\n"))
+    if is_created:
+        for text, sign in zip(text.split("\n\n")[:12], ZodiacSigns):
+            data = {
+                "pub_date": datetime.utcnow(),
+                "zodiac_sign": sign,
+                "horoscope_text": text.replace("*", "")
+            }
+            await post_horoscope(data)
+    else:
+        print("Данные не добавлены в базу")
