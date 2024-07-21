@@ -1,6 +1,8 @@
 import aiohttp
 import logging
 
+import asyncio
+
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -16,5 +18,5 @@ async def create_vk_post(post_text: str):
     }
     async with aiohttp.ClientSession() as session:
         async with session.post('https://api.vk.com/method/wall.post', params=params) as response:
-            result = await response.json()
-            logger.info(f"Пост успешно опубликован! ID поста - {result['response']['post_id']}")
+            result = await response.text()
+            print(f"Пост успешно опубликован! ID поста - {result}")

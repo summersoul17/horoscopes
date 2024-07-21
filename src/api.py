@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from fastapi import APIRouter, Depends
 
-from src.db.database import get_async_session
+from src.db.database import get_async_session, async_session
 from src.db.models import Horoscope
 from src.schemas import GetHoroscopeSchema
 
@@ -20,7 +20,8 @@ async def get_horoscopes(session: AsyncSession = Depends(get_async_session)) -> 
     return horoscopes
 
 
-async def post_horoscope(data: dict, session: AsyncSession = Depends(get_async_session)):
-    horoscope = Horoscope(**data)
-    session.add(horoscope)
-    await session.commit()
+async def post_horoscope(data: dict):
+    async with async_session() as session:
+        horoscope = Horoscope(**data)
+        session.add(horoscope)
+        await session.commit()

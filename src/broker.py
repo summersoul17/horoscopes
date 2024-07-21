@@ -1,43 +1,41 @@
 import logging
-import os
 from datetime import datetime
 from asgiref.sync import async_to_sync
+from taskiq import TaskiqScheduler
+from taskiq.schedule_sources import LabelScheduleSource
+from taskiq_redis import RedisAsyncResultBackend, ListQueueBroker
 
 from src.db.models import ZodiacSigns
 from src.generate import generate_horoscope
 from src.vkapi import create_vk_post
 from src.api import post_horoscope
 
-from celery import Celery
-from celery.schedules import crontab
-
 logger = logging.getLogger(__name__)
 
-app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
+redis_async_result = RedisAsyncResultBackend(
+    redis_url="redis://localhost:6379"
+)
 
-app.conf.update(
-    CELERY_TASK_SERIALIZER='json',
-    CELERY_ACCEPT_CONTENT=['application/json'],
-    CELERY_RESULT_SERIALIZER='json',
-    CELERY_TIMEZONE='UTC',
-    CELERY_BEAT_SCHEDULE={
-        'foo_task': {
-            'task': 'tasks.daily_task',
-            'schedule': 10,  # run every 10 seconds
-        },
-    },
+# Or you can use PubSubBroker if you need broadcasting
+broker = ListQueueBroker(url="redis://localhost:6379", ).with_result_backend(redis_async_result)
+
+scheduler = TaskiqScheduler(
+    broker=broker,
+    sources=[LabelScheduleSource(broker)],
 )
 
 
-@app.task(name="generate_horoscope")
-def daily_task():
+@broker.task(schedule=[{"cron": "*/1 * * * *", "args": [1]}])
+async def daily_task(*_, **__):
     print("Зашел в дейли таск")
-    # text = async_to_sync(generate_horoscope)()
-    # async_to_sync(create_vk_post)(post_text=text.replace("*", "").replace("\n\n", "\n"))
-    # for text, sign in zip(text.split("\n\n")[:12], ZodiacSigns):
-    #     data = {
-    #         "pub_date": datetime.utcnow(),
-    #         "zodiac_sign": sign,
-    #         "horoscope_text": text.replace("*", "")
-    #     }
-    #     async_to_sync(post_horoscope)(data)
+    text = await generate_horoscope()
+    print(f"Сгенерировал гороскоп")
+    await create_vk_post(post_text=text.replace("*", "").replace("\n\n", "\n"))
+    print("Создал пост вк")
+    for text, sign in zip(text.split("\n\n")[:12], ZodiacSigns):
+        data = {
+            "pub_date": datetime.utcnow(),
+            "zodiac_sign": sign,
+            "horoscope_text": text.replace("*", "")
+        }
+        await post_horoscope(data)

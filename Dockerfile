@@ -13,15 +13,3 @@ RUN apt-get update && \
 ENV PATH="${PATH}:${POETRY_HOME}/bin"
 
 COPY poetry.lock pyproject.toml ./
-
-FROM base as development
-
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-cache
-
-ENV PYTHONPATH=/
-COPY main.py ./main.py
-COPY src ./src
-COPY .env ./.env
-COPY config.py ./config.py
-#RUN ["python", "./main.py"]
