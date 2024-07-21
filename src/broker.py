@@ -25,7 +25,7 @@ scheduler = TaskiqScheduler(
 )
 
 
-@broker.task(schedule=[{"cron": "*/1 * * * *", "args": [1]}])
+@broker.task(schedule=[{"cron": "0 10 * * *", "args": [1]}])
 async def daily_task(*_, **__):
     print("Зашел в дейли таск")
     text = await generate_horoscope()
