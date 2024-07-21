@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 from asgiref.sync import async_to_sync
@@ -25,20 +26,21 @@ scheduler = TaskiqScheduler(
 )
 
 
-# @broker.task(schedule=[{"cron": "*/1 * * * *", "args": [1]}])
+# @broker.task(schedule=[{"cron": "*/10 * * * *", "args": [1]}]) для тестирования. Будет запускаться каждые 10 минут
 @broker.task(schedule=[{"cron": "0 10 * * *", "args": [1]}])
 async def daily_task(*_, **__):
     print("Зашел в дейли таск")
-    text = await generate_horoscope()
+    all_horoscopes_text = await generate_horoscope()
     print(f"Сгенерировал гороскоп")
-    is_created = await create_vk_post(post_text=text.replace("*", "").replace("\n\n", "\n"))
-    if is_created:
-        for text, sign in zip(text.split("\n\n")[:12], ZodiacSigns):
+    print(all_horoscopes_text.split("\n\n")[:12])
+    for one_horoscope_text, sign in zip(all_horoscopes_text.split("\n\n")[:12], ZodiacSigns):
+        is_created = await create_vk_post(post_text=one_horoscope_text.replace("*", ""))
+        if is_created:
             data = {
                 "pub_date": datetime.utcnow(),
                 "zodiac_sign": sign,
-                "horoscope_text": text.replace("*", "")
+                "horoscope_text": one_horoscope_text.replace("*", "")
             }
             await post_horoscope(data)
-    else:
-        print("Данные не добавлены в базу")
+        else:
+            print("Данные не добавлены в базу")
