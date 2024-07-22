@@ -14,11 +14,11 @@ from src.api import post_horoscope
 logger = logging.getLogger(__name__)
 
 redis_async_result = RedisAsyncResultBackend(
-    redis_url="redis://localhost:6379"
+    redis_url="redis://redis:6379"
 )
 
 # Or you can use PubSubBroker if you need broadcasting
-broker = ListQueueBroker(url="redis://localhost:6379", ).with_result_backend(redis_async_result)
+broker = ListQueueBroker(url="redis://redis:6379", ).with_result_backend(redis_async_result)
 
 scheduler = TaskiqScheduler(
     broker=broker,

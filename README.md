@@ -9,11 +9,7 @@
 - Создайте в корневой папке файл `.env` и перенесите туда все файлы из файла `.env.example`, подставив в переменные свои значения.
 - Создайте докер-контейнер командой `docker compose up`.
 - Раскомментируйте функцию `create_tables()` в файле `main.py`.
-- Запустите файл `main.py`
-- Пропишите в трёх процессах следующие команды:
-
+- Выполните следующую команду:
 ```shell
-uvicorn main:app --reload # Запуск веб-сервера для FastAPI
-taskiq scheduler main:sceduler # Создание планировщика задач
-taskiq worker main:broker main # Создание брокера задач
+docker compose up --build
 ```

@@ -1,15 +1,20 @@
-FROM python:3.10 AS base
+FROM python:3.10-slim
 
-ARG POETRY_HOME=/etc/poetry
+WORKDIR /app
+
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y libyaml-dev curl tini && \
-    curl -sSL https://install.python-poetry.org | POETRY_HOME=${POETRY_HOME} python - --version 1.8.2 && \
-    apt-get remove -y curl && \
+    apt-get install -y libyaml-dev tini && \
     apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
-ENV PATH="${PATH}:${POETRY_HOME}/bin"
+RUN pip install poetry
+RUN poetry config virtualenvs.create false
+COPY poetry.lock pyproject.toml .
 
-COPY poetry.lock pyproject.toml ./
+RUN poetry install
+
+COPY . .
+
+CMD [ "python", "main.py" ]
