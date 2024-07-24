@@ -13,3 +13,17 @@
 ```shell
 docker compose up --build
 ```
+
+## Миграции
+- Обновить до последней версии
+```shell
+alembic upgrade head
+```
+- Создать новые миграции
+```shell
+alembic revision --autogenerate -m "your comment"
+```
+- Сбросить все миграции
+```shell
+alembic downgrade base
+```
