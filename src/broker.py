@@ -1,7 +1,5 @@
-import asyncio
 import logging
 from datetime import datetime
-from asgiref.sync import async_to_sync
 from taskiq import TaskiqScheduler
 from taskiq.schedule_sources import LabelScheduleSource
 from taskiq_redis import RedisAsyncResultBackend, ListQueueBroker
@@ -17,7 +15,6 @@ redis_async_result = RedisAsyncResultBackend(
     redis_url="redis://redis:6379"
 )
 
-# Or you can use PubSubBroker if you need broadcasting
 broker = ListQueueBroker(url="redis://redis:6379", ).with_result_backend(redis_async_result)
 
 scheduler = TaskiqScheduler(

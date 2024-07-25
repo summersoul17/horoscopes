@@ -18,9 +18,6 @@ class Settings(BaseSettings):
     VK_ACCESS_TOKEN: str
     VK_OWNER_ID: str
 
-    CELERY_RESULT_BACKEND: str
-    CELERY_BROKER_URL: str
-
     @property
     def DATABASE_URL(self):
         return (f"postgresql+asyncpg://"
@@ -37,14 +34,6 @@ class Settings(BaseSettings):
     @property
     def VK_OWNER_ID_(self):
         return self.VK_OWNER_ID
-
-    @property
-    def CELERY_RESULT_BACKEND_(self):
-        return self.CELERY_RESULT_BACKEND
-
-    @property
-    def CELERY_BROKER_URL_(self):
-        return self.CELERY_BROKER_URL
 
     model_config = SettingsConfigDict(env_file=".env")
 

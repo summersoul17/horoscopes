@@ -1,9 +1,6 @@
-import json
-
 import aiohttp
 import logging
 
-import asyncio
 
 from config import settings
 
